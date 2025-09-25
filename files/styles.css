@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&display=swap');
+
+#navbar a {
+    font-family: 'Tangerine', cursive;
+  
+    background-color: #f0f8ff;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    font-size: 34px;
+    text-decoration: none;
+  
+}
