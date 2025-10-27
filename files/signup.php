@@ -80,9 +80,16 @@ if (isset($_POST['verify_signup'])) {
                 $insert->bind_param("sss", $name, $email, $password);
                 $insert->execute();
 
+                  // ✅ ye 3 lines add karo 👇
+                $_SESSION['user_id'] = $conn->insert_id;
+                $_SESSION['user_name'] = $name;
+
+                // cleanup
                 unset($_SESSION['otp']);
                 unset($_SESSION['temp_user']);
-                header("Location: home.php");
+
+                // ✅ redirect to home page
+                header("Location: index.php");
                 exit;
             }
         } else {

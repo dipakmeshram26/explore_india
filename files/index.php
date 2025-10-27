@@ -1,3 +1,9 @@
+<?php
+session_start(); // session start karo
+
+// agar user login hua hai to uska naam session me hoga
+$isLoggedIn = isset($_SESSION['user_name']);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -132,10 +138,16 @@
   <header>
     <h1>ExplorIndia</h1>
     <nav>
-      <a href="#">Home</a>
-      <a href="#">Add Listing</a>
-      <a href="login.php">Login</a>
-      <a href="signup.php">Sign Up</a>
+      <a href="index.php">Home</a>
+      <a href="add_listing.php">Add Listing</a>
+
+      <?php if ($isLoggedIn): ?>
+        <span>Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?> 👋</span>
+        <a href="logout.php">Logout</a>
+      <?php else: ?>
+        <a href="login.php">Login</a>
+        <a href="signup.php">Sign Up</a>
+      <?php endif; ?>
     </nav>
   </header>
 
