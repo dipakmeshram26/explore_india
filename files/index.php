@@ -1,8 +1,9 @@
 <?php
-session_start(); // session start karo
+session_start();
 
-// agar user login hua hai to uska naam session me hoga
+// Check login status
 $isLoggedIn = isset($_SESSION['user_name']);
+$userType = $isLoggedIn ? $_SESSION['user_type'] : null;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -115,16 +116,7 @@ $isLoggedIn = isset($_SESSION['user_name']);
     .place-card .info {
       padding: 15px;
     }
-    .place-card h4 {
-      margin: 0;
-      font-size: 20px;
-    }
-    .place-card p {
-      font-size: 14px;
-      color: #666;
-    }
 
-    /* Footer */
     footer {
       background: #0078ff;
       color: white;
@@ -139,11 +131,20 @@ $isLoggedIn = isset($_SESSION['user_name']);
     <h1>ExplorIndia</h1>
     <nav>
       <a href="index.php">Home</a>
-      <a href="add_listing.php">Add Listing</a>
 
       <?php if ($isLoggedIn): ?>
-        <span>Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?> 👋</span>
+
+        <!-- Business user options -->
+        <?php if ($userType === "business"): ?>
+          <a href="business_dashboard.php">Dashboard</a>
+          <a href="add_listing.php">Add Business Listing</a>
+        <?php else: ?>
+          <a href="add_listing.php">Add Listing</a>
+        <?php endif; ?>
+
+        <span>👋 <?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
         <a href="logout.php">Logout</a>
+
       <?php else: ?>
         <a href="login.php">Login</a>
         <a href="signup.php">Sign Up</a>
@@ -163,21 +164,23 @@ $isLoggedIn = isset($_SESSION['user_name']);
     <h3>🔥 Trending Places Near You</h3>
     <div class="places">
       <div class="place-card">
-        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836" alt="Coffee Shop">
+        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836" alt="">
         <div class="info">
           <h4>Chai Adda Café</h4>
           <p>⭐ 4.5 | Manewada, Nagpur</p>
         </div>
       </div>
+
       <div class="place-card">
-        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38" alt="Restaurant">
+        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38" alt="">
         <div class="info">
           <h4>TasteHub Restaurant</h4>
           <p>⭐ 4.2 | Sadar, Nagpur</p>
         </div>
       </div>
+
       <div class="place-card">
-        <img src="https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d" alt="Park">
+        <img src="https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d" alt="">
         <div class="info">
           <h4>Central Garden</h4>
           <p>⭐ 4.7 | Dharampeth</p>

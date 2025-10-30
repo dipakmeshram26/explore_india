@@ -16,12 +16,15 @@ if (isset($_POST['send_otp'])) {
     $email = trim($_POST['email']);
     $name = trim($_POST['name']);
     $password = trim($_POST['password']);
+    $user_type = trim($_POST['user_type']); // ✅ user_type
 
-    if (!empty($email) && !empty($name) && !empty($password)) {
+    if (!empty($email) && !empty($name) && !empty($password) && !empty($user_type)) {
+
         $_SESSION['temp_user'] = [
             'name' => $name,
             'email' => $email,
-            'password' => password_hash($password, PASSWORD_DEFAULT)
+            'password' => password_hash($password, PASSWORD_DEFAULT),
+            'user_type' => $user_type // ✅ STORE user_type
         ];
 
         $otp = rand(100000, 999999);
@@ -35,7 +38,7 @@ if (isset($_POST['send_otp'])) {
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
             $mail->Username = 'hello.exploring.india@gmail.com';
-            $mail->Password = 'gumouriheohulqvq'; // Gmail App Password
+            $mail->Password = 'gumouriheohulqvq'; 
             $mail->SMTPSecure = 'tls';
             $mail->Port = 587;
 
@@ -62,11 +65,13 @@ if (isset($_POST['send_otp'])) {
 if (isset($_POST['verify_signup'])) {
     $entered_otp = $_POST['otp'];
 
-    if (isset($_SESSION['otp']) && time() - $_SESSION['otp_time'] <= 300) { // 5 minutes validity
+    if (isset($_SESSION['otp']) && time() - $_SESSION['otp_time'] <= 300) {
+
         if ($entered_otp == $_SESSION['otp']) {
             $name = $_SESSION['temp_user']['name'];
             $email = $_SESSION['temp_user']['email'];
             $password = $_SESSION['temp_user']['password'];
+            $user_type = $_SESSION['temp_user']['user_type']; // ✅ get user_type
 
             $check = $conn->prepare("SELECT * FROM users WHERE email=?");
             $check->bind_param("s", $email);
@@ -76,19 +81,18 @@ if (isset($_POST['verify_signup'])) {
             if ($result->num_rows > 0) {
                 $message = "Email already registered!";
             } else {
-                $insert = $conn->prepare("INSERT INTO users (name, email, password, is_verified) VALUES (?, ?, ?, 1)");
-                $insert->bind_param("sss", $name, $email, $password);
+                
+                $insert = $conn->prepare("INSERT INTO users (name, email, password, user_type, is_verified) VALUES (?, ?, ?, ?, 1)");
+                $insert->bind_param("ssss", $name, $email, $password, $user_type);
                 $insert->execute();
 
-                  // ✅ ye 3 lines add karo 👇
                 $_SESSION['user_id'] = $conn->insert_id;
                 $_SESSION['user_name'] = $name;
+                $_SESSION['user_type'] = $user_type; // ✅ session user_type
 
-                // cleanup
                 unset($_SESSION['otp']);
                 unset($_SESSION['temp_user']);
 
-                // ✅ redirect to home page
                 header("Location: index.php");
                 exit;
             }
@@ -100,72 +104,75 @@ if (isset($_POST['verify_signup'])) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Sign Up - Exploring India</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f6fa;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        form {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
-            width: 320px;
-        }
-        h2 {
-            text-align: center;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 12px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #0078ff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #005fd1;
-        }
-        p {
-            color: red;
-            text-align: center;
-        }
-    </style>
+<title>Sign Up - Exploring India</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f2f6fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    form {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+        width: 320px;
+    }
+    h2 { text-align: center; }
+    input, select {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0 12px 0;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+    button {
+        width: 100%;
+        padding: 10px;
+        background: #0078ff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    button:hover { background: #005fd1; }
+    p { color: red; text-align: center; }
+</style>
 </head>
 <body>
 
 <form method="POST">
-    <h2>Sign Up</h2>
+<h2>Sign Up</h2>
 
-    <input type="text" name="name" placeholder="Full Name" value="<?php echo $_SESSION['temp_user']['name'] ?? ''; ?>" required <?php echo $otp_sent ? 'readonly' : ''; ?>>
-    <input type="email" name="email" placeholder="Email Address" value="<?php echo $_SESSION['temp_user']['email'] ?? ''; ?>" required <?php echo $otp_sent ? 'readonly' : ''; ?>>
-    <input type="password" name="password" placeholder="Password" required <?php echo $otp_sent ? 'readonly' : ''; ?>>
+<input type="text" name="name" placeholder="Full Name" 
+value="<?php echo $_SESSION['temp_user']['name'] ?? ''; ?>" required <?php echo $otp_sent ? 'readonly' : ''; ?>>
 
-    <?php if (!$otp_sent) { ?>
-        <button type="submit" name="send_otp">Send OTP</button>
-    <?php } else { ?>
-        <input type="text" name="otp" placeholder="Enter OTP" required>
-        <button type="submit" name="verify_signup">Verify & Sign Up</button>
-    <?php } ?>
+<input type="email" name="email" placeholder="Email Address" 
+value="<?php echo $_SESSION['temp_user']['email'] ?? ''; ?>" required <?php echo $otp_sent ? 'readonly' : ''; ?>>
 
-    <p><?php echo $message; ?></p>
+<input type="password" name="password" placeholder="Password" required <?php echo $otp_sent ? 'readonly' : ''; ?>>
+
+<?php if (!$otp_sent) { ?>
+<select name="user_type" required> <!-- ✅ Change name -->
+    <option value="">Select Account Type</option>
+    <option value="user">User</option>
+    <option value="business">Business User</option>
+</select>
+
+<button type="submit" name="send_otp">Send OTP</button>
+
+<?php } else { ?>
+<input type="text" name="otp" placeholder="Enter OTP" required>
+<button type="submit" name="verify_signup">Verify & Sign Up</button>
+<?php } ?>
+
+<p><?php echo $message; ?></p>
 </form>
 
 </body>

@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
-    // Check if user exists
+    // Check if user exists and verified
     $check = $conn->prepare("SELECT * FROM users WHERE email=? AND is_verified=1");
     $check->bind_param("s", $email);
     $check->execute();
@@ -22,10 +22,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
 
-        // Verify password
+        // ✅ Verify Password
         if (password_verify($password, $user['password'])) {
+
+            // ✅ Store user session
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['name'];
+            $_SESSION['user_type'] = $user['user_type']; // NEW
+
             header("Location: index.php");
             exit;
         } else {
@@ -36,7 +40,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
