@@ -140,6 +140,7 @@ $userType = $isLoggedIn ? $_SESSION['user_type'] : null;
           <a href="add_listing.php">Add Business Listing</a>
         <?php else: ?>
           <a href="add_listing.php">Add Listing</a>
+          <a href="profile-page.php">Profile</a>
         <?php endif; ?>
 
         <span>👋 <?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
