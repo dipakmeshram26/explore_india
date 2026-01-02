@@ -12,19 +12,19 @@ $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $title          = $_POST['title'];
-    $business_name  = $_POST['business_name'];
-    $short_desc     = $_POST['short_desc'];
-    $description    = $_POST['description'];
-    $category       = $_POST['category'];
-    $address        = $_POST['address'];
-    $city           = $_POST['city'];
-    $state          = $_POST['state'];
-    $pincode        = $_POST['pincode'];
+    $title         = $_POST['title'];
+    $business_name = $_POST['business_name'];
+    $short_desc    = $_POST['short_desc'];
+    $description   = $_POST['description'];
+    $category      = $_POST['category'];
+    $address       = $_POST['address'];
+    $city          = $_POST['city'];
+    $state         = $_POST['state'];
+    $pincode       = $_POST['pincode'];
 
-    // ✅ optional numeric fields
-    $latitude  = ($_POST['latitude'] !== '') ? floatval($_POST['latitude']) : null;
-    $longitude = ($_POST['longitude'] !== '') ? floatval($_POST['longitude']) : null;
+    // optional numeric values
+    $latitude  = ($_POST['latitude'] !== '') ? (float)$_POST['latitude'] : NULL;
+    $longitude = ($_POST['longitude'] !== '') ? (float)$_POST['longitude'] : NULL;
 
     $phone       = $_POST['phone'];
     $whatsapp    = $_POST['whatsapp'];
@@ -33,9 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $services    = $_POST['services'];
 
     $owner_id = $_SESSION['user_id'];
-    $cover_image = '';
+    $cover_image = NULL;
 
-    /* 🖼️ Cover image upload */
+    /* 🖼️ Cover Image Upload */
     if (!empty($_FILES['cover_image']['name'])) {
 
         $folder = "img/listings/covers/";
@@ -44,45 +44,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $ext = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
-        $file_name = uniqid("listing_") . '.' . $ext;
-        $path = $folder . $file_name;
+        $cover_image = uniqid("listing_") . "." . $ext;
 
-        if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $path)) {
-            $cover_image = $file_name;
-        }
+        move_uploaded_file(
+            $_FILES['cover_image']['tmp_name'],
+            $folder . $cover_image
+        );
     }
 
-    /* 📥 Insert into DB */
+    /* 📥 Insert Query */
     $stmt = $conn->prepare("
         INSERT INTO listings 
         (title, business_name, short_desc, description, category, address, city, state, pincode,
          latitude, longitude, owner_id, phone, whatsapp, email, cover_image, price_range, services,
          status, is_active, views, created_at)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                'pending',1,0,NOW())
+                'pending',1,0,CURRENT_TIMESTAMP)
     ");
 
-    $stmt->bind_param(
-        "ssssssssddissssss",
-        $title,
-        $business_name,
-        $short_desc,
-        $description,
-        $category,
-        $address,
-        $city,
-        $state,
-        $pincode,
-        $latitude,
-        $longitude,
-        $owner_id,
-        $phone,
-        $whatsapp,
-        $email,
-        $cover_image,
-        $price_range,
-        $services
-    );
+   $stmt->bind_param(
+    "sssssssssddissssss",
+    $title,
+    $business_name,
+    $short_desc,
+    $description,
+    $category,
+    $address,
+    $city,
+    $state,
+    $pincode,
+    $latitude,
+    $longitude,
+    $owner_id,
+    $phone,
+    $whatsapp,
+    $email,
+    $cover_image,
+    $price_range,
+    $services
+);
 
     if ($stmt->execute()) {
         $message = "✅ Listing submitted successfully! Approval pending.";
@@ -98,13 +98,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <title>Add Business Listing</title>
 <style>
 body{font-family:Arial;background:#f4f6fa;}
-form{background:#fff;width:520px;margin:40px auto;padding:25px;border-radius:10px}
+form{background:#fff;width:500px;margin:40px auto;padding:25px;border-radius:10px}
 input,textarea,select{width:100%;padding:10px;margin:8px 0}
 button{background:#0078ff;color:#fff;padding:10px;border:none;width:100%;cursor:pointer}
 button:hover{background:#005fd1}
-.msg{text-align:center;margin-top:10px;color:green}
+.msg{text-align:center;color:green;margin-top:10px}
 </style>
 </head>
+
 <body>
 
 <form method="POST" enctype="multipart/form-data">
@@ -130,10 +131,10 @@ button:hover{background:#005fd1}
 <input name="email" placeholder="Business Email">
 
 <select name="price_range">
-    <option value="">Price Range</option>
-    <option value="₹">₹</option>
-    <option value="₹₹">₹₹</option>
-    <option value="₹₹₹">₹₹₹</option>
+    <option value="">start Price Range</option>
+    <option value="₹">10 ₹</option>
+    <option value="₹₹">100 ₹₹</option>
+    <option value="₹₹₹">200 ₹₹₹</option>
 </select>
 
 <textarea name="services" placeholder="Services / Facilities"></textarea>
@@ -142,7 +143,8 @@ button:hover{background:#005fd1}
 
 <button type="submit">Submit Listing</button>
 
-<div class="msg"><?= $message ?></div>
+<div class="msg"><?php echo $message; ?></div>
+
 </form>
 
 </body>
