@@ -52,40 +52,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
     }
 
-    /* 📥 Insert Query */
+    /* 📥 Insert Query (DIRECT APPROVED) */
     $stmt = $conn->prepare("
         INSERT INTO listings 
         (title, business_name, short_desc, description, category, address, city, state, pincode,
          latitude, longitude, owner_id, phone, whatsapp, email, cover_image, price_range, services,
          status, is_active, views, created_at)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                'pending',1,0,CURRENT_TIMESTAMP)
+                'approved',1,0,NOW())
     ");
 
-   $stmt->bind_param(
-    "sssssssssddissssss",
-    $title,
-    $business_name,
-    $short_desc,
-    $description,
-    $category,
-    $address,
-    $city,
-    $state,
-    $pincode,
-    $latitude,
-    $longitude,
-    $owner_id,
-    $phone,
-    $whatsapp,
-    $email,
-    $cover_image,
-    $price_range,
-    $services
-);
+    /* ✅ bind_param FIXED (18 params = 18 types) */
+    $stmt->bind_param(
+        "sssssssssddissssss",
+        $title,
+        $business_name,
+        $short_desc,
+        $description,
+        $category,
+        $address,
+        $city,
+        $state,
+        $pincode,
+        $latitude,
+        $longitude,
+        $owner_id,
+        $phone,
+        $whatsapp,
+        $email,
+        $cover_image,
+        $price_range,
+        $services
+    );
 
     if ($stmt->execute()) {
-        $message = "✅ Listing submitted successfully! Approval pending.";
+        header("Location: index.php?listing=success");
+        exit;
     } else {
         $message = "❌ Error: " . $stmt->error;
     }
@@ -102,7 +104,7 @@ form{background:#fff;width:500px;margin:40px auto;padding:25px;border-radius:10p
 input,textarea,select{width:100%;padding:10px;margin:8px 0}
 button{background:#0078ff;color:#fff;padding:10px;border:none;width:100%;cursor:pointer}
 button:hover{background:#005fd1}
-.msg{text-align:center;color:green;margin-top:10px}
+.msg{text-align:center;color:red;margin-top:10px}
 </style>
 </head>
 
@@ -131,10 +133,10 @@ button:hover{background:#005fd1}
 <input name="email" placeholder="Business Email">
 
 <select name="price_range">
-    <option value="">start Price Range</option>
-    <option value="₹">10 ₹</option>
-    <option value="₹₹">100 ₹₹</option>
-    <option value="₹₹₹">200 ₹₹₹</option>
+    <option value="">Start Price Range</option>
+    <option value="₹">₹ Budget</option>
+    <option value="₹₹">₹₹ Medium</option>
+    <option value="₹₹₹">₹₹₹ Premium</option>
 </select>
 
 <textarea name="services" placeholder="Services / Facilities"></textarea>

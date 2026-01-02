@@ -3,14 +3,32 @@ session_start();
 
 // Check login status
 $isLoggedIn = isset($_SESSION['user_name']);
-$userType = $isLoggedIn ? $_SESSION['user_type'] : null;
+$userType  = $isLoggedIn ? $_SESSION['user_type'] : null;
 ?>
+
+<?php if (isset($_GET['listing']) && $_GET['listing'] === 'success'): ?>
+    <div id="successMsg" style="background:#d4edda;color:#155724;padding:12px;text-align:center;">
+        ✅ Your business listing has been submitted successfully!
+    </div>
+
+    <script>
+        setTimeout(function () {
+            var msg = document.getElementById("successMsg");
+            if (msg) {
+                msg.style.display = "none";
+            }
+        }, 5000);
+    </script>
+<?php endif; ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ExplorIndia | Discover Local Gems</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
     body {
       margin: 0;
@@ -84,38 +102,7 @@ $userType = $isLoggedIn ? $_SESSION['user_type'] : null;
       background: #005fcc;
     }
 
-    /* Trending Section */
-    .trending {
-      padding: 60px 50px;
-    }
-    .trending h3 {
-      text-align: center;
-      font-size: 28px;
-      margin-bottom: 30px;
-    }
-    .places {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 25px;
-    }
-    .place-card {
-      background: white;
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      transition: 0.3s;
-    }
-    .place-card:hover {
-      transform: translateY(-5px);
-    }
-    .place-card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-    }
-    .place-card .info {
-      padding: 15px;
-    }
+     
 
     footer {
       background: #0078ff;
@@ -163,32 +150,48 @@ $userType = $isLoggedIn ? $_SESSION['user_type'] : null;
 
   <section class="trending">
     <h3>🔥 Trending Places Near You</h3>
+
     <div class="places">
-      <div class="place-card">
-        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836" alt="">
-        <div class="info">
-          <h4>Chai Adda Café</h4>
-          <p>⭐ 4.5 | Manewada, Nagpur</p>
-        </div>
-      </div>
+        <?php
+        include 'db.php';
 
-      <div class="place-card">
-        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38" alt="">
-        <div class="info">
-          <h4>TasteHub Restaurant</h4>
-          <p>⭐ 4.2 | Sadar, Nagpur</p>
-        </div>
-      </div>
+        $sql = "
+            SELECT id, title, city, avg_rating, cover_image 
+            FROM listings 
+            WHERE status='approved' AND is_active=1 
+            ORDER BY created_at DESC 
+            LIMIT 6
+        ";
 
-      <div class="place-card">
-        <img src="https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d" alt="">
-        <div class="info">
-          <h4>Central Garden</h4>
-          <p>⭐ 4.7 | Dharampeth</p>
-        </div>
-      </div>
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0):
+            while ($row = $result->fetch_assoc()):
+                $image = !empty($row['cover_image'])
+                    ? "img/listings/covers/" . $row['cover_image']
+                    : "img/default.jpg";
+        ?>
+            <div class="place-card">
+                <img src="<?= $image ?>" alt="<?= htmlspecialchars($row['title']) ?>">
+                <div class="info">
+                    <h4><?= htmlspecialchars($row['title']) ?></h4>
+                    <p>
+                        ⭐ <?= $row['avg_rating'] ?? 'New' ?> |
+                        <?= htmlspecialchars($row['city']) ?>
+                    </p>
+                </div>
+            </div>
+        <?php
+            endwhile;
+        else:
+        ?>
+            <p style="text-align:center;width:100%;">
+                No listings available right now.
+            </p>
+        <?php endif; ?>
     </div>
-  </section>
+</section>
+
 
   <footer>
     © 2025 ExplorIndia | Made with ❤️ for Local Discovery
