@@ -2,6 +2,11 @@
 session_start();
 include 'db.php';
 
+$isLoggedIn = isset($_SESSION['user_id']);
+$userName  = $isLoggedIn ? $_SESSION['user_name'] : '';
+$userType  = $isLoggedIn ? $_SESSION['user_type'] : '';
+
+
 /* 🔐 Login check */
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -106,9 +111,95 @@ button{background:#0078ff;color:#fff;padding:10px;border:none;width:100%;cursor:
 button:hover{background:#005fd1}
 .msg{text-align:center;color:red;margin-top:10px}
 </style>
+
+<style>
+body{font-family:Arial;background:#f4f6fa;margin:0}
+
+/* NAVBAR */
+.navbar{
+    background:#0d6efd;
+    padding:12px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.navbar .logo{
+    color:#fff;
+    font-size:20px;
+    font-weight:bold;
+    text-decoration:none;
+}
+
+.navbar ul{
+    list-style:none;
+    display:flex;
+    gap:20px;
+    margin:0;
+    padding:0;
+}
+
+.navbar ul li a{
+    color:#fff;
+    text-decoration:none;
+    font-size:15px;
+}
+
+.navbar ul li a:hover{
+    text-decoration:underline;
+}
+
+/* FORM */
+form{
+    background:#fff;
+    width:500px;
+    margin:40px auto;
+    padding:25px;
+    border-radius:10px
+}
+
+input,textarea,select{
+    width:100%;
+    padding:10px;
+    margin:8px 0
+}
+
+button{
+    background:#0078ff;
+    color:#fff;
+    padding:10px;
+    border:none;
+    width:100%;
+    cursor:pointer
+}
+
+button:hover{background:#005fd1}
+
+.msg{text-align:center;color:red;margin-top:10px}
+</style>
+
 </head>
 
 <body>
+ 
+<div class="navbar">
+    <a href="index.php" class="logo">Explore India</a>
+
+    <ul>
+        <li><a href="index.php">Home</a></li>
+
+        <?php if ($isLoggedIn && $userType === 'business'): ?>
+            <li><a href="add_listing.php">Add Listing</a></li>
+        <?php endif; ?>
+
+        <?php if ($isLoggedIn): ?>
+            <li><a href="profile.php"><?= htmlspecialchars($userName) ?></a></li>
+            <li><a href="logout.php">Logout</a></li>
+        <?php else: ?>
+            <li><a href="login.php">Login</a></li>
+        <?php endif; ?>
+    </ul>
+</div>
 
 <form method="POST" enctype="multipart/form-data">
 <h2>Add Business Listing</h2>
